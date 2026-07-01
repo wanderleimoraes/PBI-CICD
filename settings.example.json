@@ -1,0 +1,9 @@
+{
+  "tenantId": "<Entra ID tenant GUID - Azure portal > Microsoft Entra ID > Overview>",
+  "clientId": "<Application (client) ID of the public-client app registration used for sign-in>",
+  "environments": [
+    { "name": "DEV", "workspace": "<Power BI workspace name for DEV, as shown in the Power BI service>" },
+    { "name": "BENCH", "workspace": "<Power BI workspace name for BENCH>" },
+    { "name": "PROD", "workspace": "<Power BI workspace name for PROD - the name PROD triggers the confirmation gate>" }
+  ]
+}
