@@ -1,6 +1,9 @@
 # XMLA CI/CD Utility
 
-Interactive PowerShell console for running XMLA/TMSL commands against Power BI Premium workspaces through the XMLA endpoint. Sign in once with Entra ID, pick an environment (DEV / BENCH / PROD), then paste and execute commands in a loop.
+Two PowerShell utilities for Power BI Premium CI/CD, sharing one `settings.json` and one Entra ID sign-in flow:
+
+- **`run.ps1`** — interactive XMLA console: sign in, pick an environment (DEV / BENCH / PROD), then paste and execute XMLA/TMSL commands in a loop. Semantic model operations only (deploy via `createOrReplace`, refresh, etc.).
+- **`deploy.ps1`** — full PBIP deployment: takes the PBIP projects from your git (Bitbucket) clone and pushes **semantic models (TMDL) and reports (PBIR)** to the target workspace through the Fabric item APIs. This covers what XMLA cannot: the report layer.
 
 ## Prerequisites
 
@@ -19,13 +22,32 @@ Interactive PowerShell console for running XMLA/TMSL commands against Power BI P
 
 The access token is refreshed automatically when it is close to expiry, so long sessions keep working.
 
+## Full deployment (deploy.ps1)
+
+Deploys everything that is in the git clone to a workspace — the "release" path. Start it with `deploy.cmd`. The flow:
+
+1. **Git sync** — shows the branch of `repoPath`, fetches, offers a fast-forward pull if behind, and demands a typed `YES` if the working tree has uncommitted changes (you would be deploying something that is not in Bitbucket). The deployed branch/commit appears in the summary.
+2. **Discovery** — finds every `*.SemanticModel` and `*.Report` folder in the repo (works with separate `semantic-models/` and `reports/` trees). Pick items by number or `A` for all.
+3. **Sign-in and environment** — same Entra ID flow and PROD confirmation gate as `run.ps1`.
+4. **Deployment** — models first, then reports. Each item is created if absent, otherwise its definition is updated in place (`createOrReplace` semantics, item IDs preserved). Each report's `definition.pbir` is rebound from its local `byPath` reference to the semantic model in the target workspace.
+5. **Optional refresh** of the deployed models at the end.
+
+Requirements and notes:
+
+- The workspace must be on Premium/Fabric capacity (same requirement as the XMLA endpoint).
+- `.pbi/` folders, `.platform` files, and `*.abf` caches are never uploaded.
+- The token is requested with the Power BI scope by default, which the Fabric APIs accept; if your tenant rejects it, set `apiScope` in `settings.json` to `https://api.fabric.microsoft.com/.default`.
+- Updating an existing semantic model's definition does not delete its data — but a schema change may require a refresh before reports render.
+
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | `run.cmd` | Double-click launcher for `run.ps1` |
 | `run.ps1` | The interactive XMLA console |
-| `settings.example.json` | Template for `settings.json` (tenant, client ID, environments) |
+| `deploy.cmd` | Double-click launcher for `deploy.ps1` |
+| `deploy.ps1` | Full PBIP deployment (models + reports) from the git clone |
+| `settings.example.json` | Template for `settings.json` (tenant, client ID, repo path, environments) |
 | `libs-msal/` | Microsoft Authentication Library (MSAL) for the Entra ID sign-in |
 | `libs-adomd/` | ADOMD.NET client used for the XMLA connection |
 

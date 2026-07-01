@@ -1,6 +1,9 @@
 {
   "tenantId": "<Entra ID tenant GUID - Azure portal > Microsoft Entra ID > Overview>",
   "clientId": "<Application (client) ID of the public-client app registration used for sign-in>",
+  "apiScope": "<optional - token scope for deploy.ps1; defaults to https://analysis.windows.net/powerbi/api/.default; set to https://api.fabric.microsoft.com/.default if your tenant requires Fabric-scoped tokens>",
+  "repoPath": "<optional - local path of the Bitbucket clone containing the PBIP projects, used by deploy.ps1>",
+  "defaultBranch": "<optional - integration branch of that repo; defaults to main>",
   "environments": [
     { "name": "DEV", "workspace": "<Power BI workspace name for DEV, as shown in the Power BI service>" },
     { "name": "BENCH", "workspace": "<Power BI workspace name for BENCH>" },
