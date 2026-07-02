@@ -4,6 +4,7 @@ Two PowerShell utilities for Power BI Premium CI/CD, sharing one `settings.json`
 
 - **`run.ps1`** — interactive XMLA console: sign in, pick an environment (DEV / BENCH / PROD), then paste and execute XMLA/TMSL commands in a loop. Semantic model operations only (deploy via `createOrReplace`, refresh, etc.).
 - **`deploy.ps1`** — full PBIP deployment: takes the PBIP projects from your git (Bitbucket) clone and pushes **semantic models (TMDL) and reports (PBIR)** to the target workspace through the Fabric item APIs. This covers what XMLA cannot: the report layer.
+- **`publish.ps1`** — one command for both: commits pending changes (asking for a message), pushes the current branch to origin, and then chains into `deploy.ps1`. Deployment only starts if the push succeeded, so the workspace can never get ahead of source control. If the push is rejected (protected branch), it tells you to publish via pull request and deploy after the merge.
 
 ## Prerequisites
 
@@ -47,6 +48,8 @@ Requirements and notes:
 | `run.ps1` | The interactive XMLA console |
 | `deploy.cmd` | Double-click launcher for `deploy.ps1` |
 | `deploy.ps1` | Full PBIP deployment (models + reports) from the git clone |
+| `publish.cmd` | Double-click launcher for `publish.ps1` |
+| `publish.ps1` | Commit + push to origin, then chain into `deploy.ps1` |
 | `settings.example.json` | Template for `settings.json` (tenant, client ID, repo path, environments) |
 | `libs-msal/` | Microsoft Authentication Library (MSAL) for the Entra ID sign-in |
 | `libs-adomd/` | ADOMD.NET client used for the XMLA connection |
