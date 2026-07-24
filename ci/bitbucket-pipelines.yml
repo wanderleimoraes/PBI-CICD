@@ -1,0 +1,57 @@
+# Prototype Bitbucket Pipelines definition for Power BI PBIP CI/CD (Bitbucket Cloud).
+#
+# To use: copy this file to the ROOT of the dashboards repository as
+# bitbucket-pipelines.yml, and copy validate.ps1 + deploy-ci.ps1 to tools/ci/.
+#
+# One-time setup in Bitbucket (Repository settings > Pipelines):
+#   - Repository variables:
+#       AZURE_TENANT_ID      (tenant GUID)
+#       AZURE_CLIENT_ID      (service principal app id)
+#       AZURE_CLIENT_SECRET  (service principal secret - mark as SECURED)
+#   - Deployments: environments DEV, BENCH, PROD, each with a variable
+#       WORKSPACE_NAME = the Power BI workspace name for that environment
+#
+# One-time setup on the Microsoft side:
+#   - App registration (service principal) with a client secret
+#   - Fabric admin portal: allow service principals to use Fabric APIs
+#   - Add the service principal as Member/Contributor of each workspace
+#
+# Bitbucket Data Center note: Pipelines is Cloud-only. On DC, run the same two
+# scripts from Bamboo or Jenkins - the stage layout below maps one-to-one.
+
+image: mcr.microsoft.com/powershell:lts-ubuntu-22.04
+
+definitions:
+  steps:
+    - step: &validate
+        name: Validate PBIP structure
+        script:
+          - pwsh ./tools/ci/validate.ps1 -RepoPath .
+
+pipelines:
+  # Every pull request gets validated before review/merge
+  pull-requests:
+    '**':
+      - step: *validate
+
+  # Merge to main: validate again, auto-deploy to DEV, gated BENCH and PROD
+  branches:
+    main:
+      - step: *validate
+      - step:
+          name: Deploy to DEV
+          deployment: DEV
+          script:
+            - pwsh ./tools/ci/deploy-ci.ps1 -RepoPath .
+      - step:
+          name: Deploy to BENCH
+          deployment: BENCH
+          trigger: manual
+          script:
+            - pwsh ./tools/ci/deploy-ci.ps1 -RepoPath .
+      - step:
+          name: Deploy to PROD
+          deployment: PROD
+          trigger: manual
+          script:
+            - pwsh ./tools/ci/deploy-ci.ps1 -RepoPath .

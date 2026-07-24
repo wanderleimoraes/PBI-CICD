@@ -54,6 +54,20 @@ Requirements and notes:
 | `libs-msal/` | Microsoft Authentication Library (MSAL) for the Entra ID sign-in |
 | `libs-adomd/` | ADOMD.NET client used for the XMLA connection |
 
+## CI/CD prototype (`ci/`)
+
+A ready-to-adapt prototype of the fully automated pipeline, for Bitbucket Cloud Pipelines. Architecture diagram: [`docs/ci-architecture.svg`](docs/ci-architecture.svg).
+
+| File | Purpose |
+|------|---------|
+| `ci/bitbucket-pipelines.yml` | Pipeline: validate every PR; on merge to `main` auto-deploy to DEV, then manual-triggered BENCH and PROD stages |
+| `ci/validate.ps1` | CI check: no `.pbix`/`.abf`/`.pbi` committed, TMDL definitions present, `definition.pbir`/`definition.pbism` valid, report model references resolve |
+| `ci/deploy-ci.ps1` | Non-interactive deployment: service-principal (client credentials) auth, same Fabric-API deploy logic as `deploy.ps1`, exit codes for CI |
+
+To adopt it in the dashboards repository: copy `bitbucket-pipelines.yml` to the repo root and the two scripts to `tools/ci/`, then complete the one-time setup listed in the YAML header (app registration + secret, Fabric tenant setting allowing service principals, workspace access for the SP, Bitbucket repository variables and DEV/BENCH/PROD deployment environments).
+
+Bitbucket **Data Center** has no Pipelines — run the same two scripts from Bamboo or Jenkins; the stage layout maps one-to-one. The scripts run on Windows PowerShell 5.1 and PowerShell 7 (Linux containers) alike.
+
 ## Bundled libraries
 
 The DLLs are taken as-is from the official Microsoft NuGet packages:

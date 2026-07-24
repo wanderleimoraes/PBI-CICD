@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 790" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="790" fill="#ffffff"/>
+  <text x="620" y="34" text-anchor="middle" font-size="21" font-weight="bold" fill="#24292f">Power BI CI/CD — PBIP on Bitbucket, delivered to Fabric workspaces</text>
+
+  <!-- ===================== Lane 1: Developer ===================== -->
+  <rect x="20" y="58" width="1200" height="130" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="36" y="80" font-size="13" font-weight="bold" fill="#57606a">DEVELOPER WORKSTATION</text>
+
+  <rect x="50" y="98" width="240" height="70" rx="8" fill="#ffffff" stroke="#57606a"/>
+  <text x="170" y="126" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Power BI Desktop</text>
+  <text x="170" y="146" text-anchor="middle" font-size="11" fill="#57606a">PBIP: TMDL model + PBIR report</text>
+
+  <line x1="290" y1="133" x2="338" y2="133" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="340" y="98" width="240" height="70" rx="8" fill="#ffffff" stroke="#57606a"/>
+  <text x="460" y="126" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Feature branch</text>
+  <text x="460" y="146" text-anchor="middle" font-size="11" fill="#57606a">git commit + push</text>
+
+  <rect x="880" y="98" width="310" height="70" rx="8" fill="#ffffff" stroke="#57606a" stroke-dasharray="5,4"/>
+  <text x="1035" y="126" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Manual utilities (today)</text>
+  <text x="1035" y="146" text-anchor="middle" font-size="11" fill="#57606a">run.ps1 (XMLA) · deploy.ps1 · publish.ps1</text>
+
+  <!-- feature branch -> PR -->
+  <line x1="460" y1="168" x2="460" y2="246" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- manual path down to Fabric lane -->
+  <line x1="1120" y1="168" x2="1120" y2="580" stroke="#57606a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="1158" y="370" text-anchor="middle" font-size="11" fill="#57606a">manual</text>
+  <text x="1158" y="385" text-anchor="middle" font-size="11" fill="#57606a">deploy path</text>
+
+  <!-- ===================== Lane 2: Bitbucket ===================== -->
+  <rect x="20" y="208" width="1200" height="200" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="36" y="230" font-size="13" font-weight="bold" fill="#57606a">BITBUCKET — REPOSITORY + PIPELINES</text>
+
+  <rect x="360" y="248" width="200" height="54" rx="8" fill="#ffffff" stroke="#57606a"/>
+  <text x="460" y="270" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Pull request</text>
+  <text x="460" y="288" text-anchor="middle" font-size="11" fill="#57606a">review required</text>
+
+  <line x1="560" y1="275" x2="618" y2="275" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="620" y="248" width="190" height="54" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="715" y="270" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">CI: validate.ps1</text>
+  <text x="715" y="288" text-anchor="middle" font-size="11" fill="#3b82f6">structure + hygiene checks</text>
+
+  <line x1="810" y1="275" x2="868" y2="275" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="870" y="248" width="220" height="54" rx="8" fill="#ffffff" stroke="#57606a"/>
+  <text x="980" y="270" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Squash-merge to main</text>
+  <text x="980" y="288" text-anchor="middle" font-size="11" fill="#57606a">protected branch</text>
+
+  <!-- merge -> pipeline -->
+  <polyline points="980,302 980,318 130,318 130,336" fill="none" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="150" y="331" font-size="11" fill="#57606a">pipeline runs on merge to main</text>
+
+  <rect x="50" y="340" width="160" height="54" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="130" y="362" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Validate</text>
+  <text x="130" y="380" text-anchor="middle" font-size="11" fill="#3b82f6">validate.ps1</text>
+
+  <line x1="210" y1="367" x2="258" y2="367" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <rect x="260" y="340" width="170" height="54" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="345" y="362" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Deploy to DEV</text>
+  <text x="345" y="380" text-anchor="middle" font-size="11" fill="#3b82f6">automatic · deploy-ci.ps1</text>
+
+  <line x1="430" y1="367" x2="518" y2="367" stroke="#57606a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="474" y="358" text-anchor="middle" font-size="10" fill="#d97706">approval</text>
+
+  <rect x="520" y="340" width="180" height="54" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="610" y="362" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Deploy to BENCH</text>
+  <text x="610" y="380" text-anchor="middle" font-size="11" fill="#b45309">manual trigger</text>
+
+  <line x1="700" y1="367" x2="788" y2="367" stroke="#57606a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="744" y="358" text-anchor="middle" font-size="10" fill="#d97706">approval</text>
+
+  <rect x="790" y="340" width="180" height="54" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="880" y="362" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Deploy to PROD</text>
+  <text x="880" y="380" text-anchor="middle" font-size="11" fill="#b45309">manual trigger</text>
+
+  <!-- ===================== Lane 3: Entra ===================== -->
+  <rect x="20" y="428" width="1200" height="95" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="36" y="450" font-size="13" font-weight="bold" fill="#57606a">MICROSOFT ENTRA ID</text>
+
+  <rect x="50" y="458" width="270" height="54" rx="8" fill="#ffffff" stroke="#57606a"/>
+  <text x="185" y="480" text-anchor="middle" font-size="13" font-weight="bold" fill="#24292f">Service principal</text>
+  <text x="185" y="498" text-anchor="middle" font-size="11" fill="#57606a">app registration + secret</text>
+
+  <line x1="320" y1="485" x2="880" y2="485" stroke="#57606a" stroke-width="1.2" stroke-dasharray="5,4"/>
+  <text x="600" y="477" text-anchor="middle" font-size="11" fill="#57606a">OAuth2 client-credentials token (Fabric API scope)</text>
+
+  <!-- deploy steps -> workspaces (through Entra lane) -->
+  <line x1="345" y1="394" x2="345" y2="580" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <line x1="610" y1="394" x2="610" y2="580" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <line x1="880" y1="394" x2="880" y2="580" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- ===================== Lane 4: Fabric ===================== -->
+  <rect x="20" y="543" width="1200" height="170" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="36" y="565" font-size="13" font-weight="bold" fill="#57606a">POWER BI / FABRIC — PREMIUM CAPACITY</text>
+
+  <rect x="230" y="585" width="230" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="345" y="613" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Workspace DEV</text>
+  <text x="345" y="636" text-anchor="middle" font-size="11" fill="#15803d">semantic models + reports</text>
+  <text x="345" y="653" text-anchor="middle" font-size="11" fill="#15803d">items via Fabric API</text>
+
+  <rect x="495" y="585" width="230" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="610" y="613" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Workspace BENCH</text>
+  <text x="610" y="636" text-anchor="middle" font-size="11" fill="#15803d">semantic models + reports</text>
+  <text x="610" y="653" text-anchor="middle" font-size="11" fill="#15803d">items via Fabric API</text>
+
+  <rect x="765" y="585" width="230" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="880" y="613" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Workspace PROD</text>
+  <text x="880" y="636" text-anchor="middle" font-size="11" fill="#15803d">semantic models + reports</text>
+  <text x="880" y="653" text-anchor="middle" font-size="11" fill="#15803d">items via Fabric API</text>
+
+  <!-- ===================== Legend ===================== -->
+  <line x1="50" y1="748" x2="95" y2="748" stroke="#2563eb" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <text x="105" y="752" font-size="12" fill="#24292f">automated</text>
+  <line x1="205" y1="748" x2="250" y2="748" stroke="#57606a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="260" y="752" font-size="12" fill="#24292f">manual / gated</text>
+  <rect x="390" y="739" width="18" height="14" rx="3" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="415" y="752" font-size="12" fill="#24292f">pipeline step (auto)</text>
+  <rect x="560" y="739" width="18" height="14" rx="3" fill="#fef3c7" stroke="#d97706"/>
+  <text x="585" y="752" font-size="12" fill="#24292f">approval-gated step</text>
+  <rect x="740" y="739" width="18" height="14" rx="3" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="765" y="752" font-size="12" fill="#24292f">target workspace</text>
+</svg>
