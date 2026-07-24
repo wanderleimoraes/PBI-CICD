@@ -1,2 +1,5 @@
 # Local configuration with real tenant/client/workspace values - never commit
 settings.json
+
+# Stray tool logs (e.g. dbt run from this folder)
+logs/
