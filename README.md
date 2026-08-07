@@ -56,7 +56,7 @@ Requirements and notes:
 
 ## CI/CD prototype (`ci/`)
 
-A ready-to-adapt prototype of the fully automated pipeline, for Bitbucket Cloud Pipelines. Architecture diagram: [`docs/ci-architecture.svg`](docs/ci-architecture.svg).
+A ready-to-adapt prototype of the fully automated pipeline, for Bitbucket Cloud Pipelines. Architecture diagram: [`docs/ci-architecture.svg`](docs/ci-architecture.svg). Team rollout guide (branching model, day-to-day steps, Bitbucket settings to configure): [`docs/team-workflow.md`](docs/team-workflow.md).
 
 | File | Purpose |
 |------|---------|
