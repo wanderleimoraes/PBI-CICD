@@ -263,6 +263,43 @@ function Get-FabricPaged {
     return $all
 }
 
+function Wait-DatasetRefresh {
+    param([string]$WorkspaceId, [string]$DatasetId, [int]$TimeoutMinutes = 30, [int]$PollSeconds = 10)
+
+    Update-AccessToken
+    $refreshUri = "https://api.powerbi.com/v1.0/myorg/groups/$WorkspaceId/datasets/$DatasetId/refreshes"
+    $resp = Invoke-WebRequest -UseBasicParsing -Method Post -Uri $refreshUri -Headers @{ Authorization = "Bearer $($script:token)" } -Body '{"notifyOption":"NoNotification"}' -ContentType "application/json"
+
+    # The refresh id normally comes back in the RequestId header; fall back to reading
+    # the most recent history entry if a proxy/gateway ever strips it.
+    $refreshId = $null
+    try { $refreshId = ($resp.Headers["RequestId"] | Select-Object -First 1) } catch {}
+    if (-not $refreshId) {
+        Start-Sleep -Seconds 2
+        Update-AccessToken
+        $latest = Invoke-RestMethod -Method Get -Uri "$refreshUri`?`$top=1" -Headers @{ Authorization = "Bearer $($script:token)" }
+        $refreshId = $latest.value[0].requestId
+    }
+    if (-not $refreshId) { throw "Refresh started but no refresh id could be determined - cannot confirm completion." }
+
+    Write-Host "  refresh $refreshId started, waiting for completion..." -ForegroundColor Gray
+    $statusUri = "$refreshUri/$refreshId"
+    $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
+    while ($true) {
+        Start-Sleep -Seconds $PollSeconds
+        Update-AccessToken
+        $status = Invoke-RestMethod -Method Get -Uri $statusUri -Headers @{ Authorization = "Bearer $($script:token)" }
+        if ($status.status -eq "Completed") {
+            Write-Host "  refresh completed" -ForegroundColor Green
+            return
+        }
+        if ($status.status -in @("Failed", "Disabled", "Cancelled")) {
+            throw "Refresh ended with status '$($status.status)': $($status.serviceExceptionJson)"
+        }
+        if ((Get-Date) -gt $deadline) { throw "Refresh $refreshId timed out after $TimeoutMinutes minutes (still '$($status.status)')." }
+    }
+}
+
 # ------------------------------------------------------- definition part builders
 
 function Get-DefinitionParts {
@@ -423,19 +460,20 @@ try {
         }
     }
 
-    # Optional refresh of the deployed semantic models (Power BI REST API)
+    # Optional refresh of the deployed semantic models (Power BI REST API) - waits for
+    # completion and reports success/failure, rather than firing and hoping.
     if ($deployedModelIds.Count -gt 0) {
         Write-Host ""
         $answer = Read-Host "Trigger a refresh of the deployed semantic model(s) now? (y/N)"
         if ($answer -eq "y") {
             foreach ($id in $deployedModelIds) {
                 try {
-                    Update-AccessToken
-                    Invoke-RestMethod -Method Post -Uri "https://api.powerbi.com/v1.0/myorg/groups/$wsId/datasets/$id/refreshes" -Headers @{ Authorization = "Bearer $($script:token)" } -Body '{"notifyOption":"NoNotification"}' -ContentType "application/json" | Out-Null
-                    Write-Host "Refresh started for $id" -ForegroundColor Green
+                    Wait-DatasetRefresh -WorkspaceId $wsId -DatasetId $id
+                    $results += [pscustomobject]@{ Item = "Refresh $id"; Status = "COMPLETED" }
                 }
                 catch {
-                    Write-Host "Could not start refresh for $id : $_" -ForegroundColor Yellow
+                    Write-Host "Refresh failed for $id : $_" -ForegroundColor Red
+                    $results += [pscustomobject]@{ Item = "Refresh $id"; Status = "FAILED" }
                 }
             }
         }

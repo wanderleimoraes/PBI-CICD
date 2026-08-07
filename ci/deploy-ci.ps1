@@ -10,7 +10,8 @@ param(
     [string]$TenantId = $env:AZURE_TENANT_ID,
     [string]$ClientId = $env:AZURE_CLIENT_ID,
     [string]$ClientSecret = $env:AZURE_CLIENT_SECRET,
-    [string]$ApiScope = $(if ($env:PBI_API_SCOPE) { $env:PBI_API_SCOPE } else { "https://api.fabric.microsoft.com/.default" })
+    [string]$ApiScope = $(if ($env:PBI_API_SCOPE) { $env:PBI_API_SCOPE } else { "https://api.fabric.microsoft.com/.default" }),
+    [switch]$Refresh
 )
 
 $ErrorActionPreference = "Stop"
@@ -115,6 +116,43 @@ function Get-FabricPaged {
     return $all
 }
 
+function Wait-DatasetRefresh {
+    param([string]$WorkspaceId, [string]$DatasetId, [int]$TimeoutMinutes = 30, [int]$PollSeconds = 10)
+
+    Update-AccessToken
+    $refreshUri = "https://api.powerbi.com/v1.0/myorg/groups/$WorkspaceId/datasets/$DatasetId/refreshes"
+    $resp = Invoke-WebRequest -UseBasicParsing -Method Post -Uri $refreshUri -Headers @{ Authorization = "Bearer $($script:token)" } -Body '{"notifyOption":"NoNotification"}' -ContentType "application/json"
+
+    # The refresh id normally comes back in the RequestId header; fall back to reading
+    # the most recent history entry if a proxy/gateway ever strips it.
+    $refreshId = $null
+    try { $refreshId = ($resp.Headers["RequestId"] | Select-Object -First 1) } catch {}
+    if (-not $refreshId) {
+        Start-Sleep -Seconds 2
+        Update-AccessToken
+        $latest = Invoke-RestMethod -Method Get -Uri "$refreshUri`?`$top=1" -Headers @{ Authorization = "Bearer $($script:token)" }
+        $refreshId = $latest.value[0].requestId
+    }
+    if (-not $refreshId) { throw "Refresh started but no refresh id could be determined - cannot confirm completion." }
+
+    Write-Host "  refresh $refreshId started, waiting for completion..."
+    $statusUri = "$refreshUri/$refreshId"
+    $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
+    while ($true) {
+        Start-Sleep -Seconds $PollSeconds
+        Update-AccessToken
+        $status = Invoke-RestMethod -Method Get -Uri $statusUri -Headers @{ Authorization = "Bearer $($script:token)" }
+        if ($status.status -eq "Completed") {
+            Write-Host "  refresh completed" -ForegroundColor Green
+            return
+        }
+        if ($status.status -in @("Failed", "Disabled", "Cancelled")) {
+            throw "Refresh ended with status '$($status.status)': $($status.serviceExceptionJson)"
+        }
+        if ((Get-Date) -gt $deadline) { throw "Refresh $refreshId timed out after $TimeoutMinutes minutes (still '$($status.status)')." }
+    }
+}
+
 # ------------------------------------------------------- definition part builders
 
 function Get-DefinitionParts {
@@ -199,6 +237,7 @@ if ($catalog.Count -eq 0) {
 }
 
 $failedCount = 0
+$deployedModelIds = @()
 foreach ($item in ($catalog | Sort-Object @{ Expression = { if ($_.Type -eq "SemanticModel") { 0 } else { 1 } } })) {
     Write-Host ""
     Write-Host "Deploying $($item.Type) '$($item.Name)'..."
@@ -236,11 +275,28 @@ foreach ($item in ($catalog | Sort-Object @{ Expression = { if ($_.Type -eq "Sem
             $itemId = $created.id
             Write-Host "  created ($itemId)"
         }
-        if ($item.Type -eq "SemanticModel" -and $itemId) { $modelIds[$item.Name] = $itemId }
+        if ($item.Type -eq "SemanticModel" -and $itemId) {
+            $modelIds[$item.Name] = $itemId
+            $deployedModelIds += $itemId
+        }
     }
     catch {
         Write-Host "  FAILED: $_" -ForegroundColor Red
         $failedCount++
+    }
+}
+
+if ($Refresh -and $deployedModelIds.Count -gt 0) {
+    Write-Host ""
+    Write-Host "=== Refreshing deployed semantic model(s) ==="
+    foreach ($id in $deployedModelIds) {
+        try {
+            Wait-DatasetRefresh -WorkspaceId $wsId -DatasetId $id
+        }
+        catch {
+            Write-Host "  Refresh FAILED for $id : $_" -ForegroundColor Red
+            $failedCount++
+        }
     }
 }
 
